@@ -12,3 +12,7 @@ yarn-error.log
 .env
 access.log
 error.log
+/public/platform/frontend/assets/images/customer_images
+/public/test.php
+./vscode/*
+/public/platform/frontend/assets/images/*
