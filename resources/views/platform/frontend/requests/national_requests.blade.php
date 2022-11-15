@@ -31,6 +31,8 @@ $start=$_GET['page'];
 	}
 
 }
+
+
 ?>
 @section('content')
                     <div class="col-lg-9">

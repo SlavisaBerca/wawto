@@ -149,117 +149,105 @@ class RequestsController extends Controller
         $user=auth()->user();
 		$brandparam=Brandparam::where('user_id',$user->id)->where('brand_id','99999999999')->first();
 		$partparam=Partparam::where('user_id',$user->id)->where('param','99999999999')->first();
-		
+
         if($brandparam && !$partparam){		
-		$requests=DB::table('requests')
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-     
-		->leftjoin('partparams','requests.part_type','=','partparams.param')
-         
-		->where('partparams.user_id',$user->id)
-		->where('requests.added_by','!=',$user->id)
-		->where('requests.status','=','1')
-        ->where('domainparams.user_id',$user->id)->orderBy('request_id',$sort)->paginate($pg);
-		}if($partparam && !$brandparam){		
-		$requests=DB::table('requests')
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-    
-		->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
-                
-        ->where('domainparams.user_id',$user->id)
-		->where('requests.added_by','!=',$user->id)
-		->where('brandparams.user_id',$user->id)
-		->where('requests.status','=','1')->orderBy('request_id',$sort)->paginate($pg);
+			$requests=DB::table('requests')
+				->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+				->leftjoin('partparams','requests.part_type','=','partparams.param')
+				->where('partparams.user_id',$user->id)
+				->where('requests.added_by','!=',$user->id)
+				->where('requests.status','=','1')
+				->where('domainparams.user_id',$user->id)->orderBy('request_id',$sort)->paginate($pg);
+		}
+		
+		if($partparam && !$brandparam){		
+			$requests=DB::table('requests')
+				->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+				->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
+				->where('domainparams.user_id',$user->id)
+				->where('requests.added_by','!=',$user->id)
+				->where('brandparams.user_id',$user->id)
+				->where('requests.status','=','1')->orderBy('request_id',$sort)->paginate($pg);
 		
 		}
+
 		if($brandparam && $partparam){
 			$requests=DB::table('requests')
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-              
-       
-		->where('requests.added_by','!=',$user->id)
-		->where('requests.status','=','1')	
-        ->where('domainparams.user_id',$user->id)->orderBy('request_id',$sort)->paginate($pg);
+				->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+				->where('requests.added_by','!=',$user->id)
+				->where('requests.status','=','1')	
+				->where('domainparams.user_id',$user->id)->orderBy('request_id',$sort)->paginate($pg);
 		
-		}if(!$partparam && !$brandparam){
-		
-	
-		$requests=DB::table('requests')
-		
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
- 
-		->leftjoin('partparams','requests.part_type','=','partparams.param')
-		->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
-        
-	   ->where('brandparams.user_id',$user->id)
-		->where('partparams.user_id',$user->id)
-		->where('requests.added_by','!=',$user->id)
-		->where('requests.status','=','1')
-        ->where('domainparams.user_id',$user->id)->orderBy('request_id',$sort)->paginate($pg);
 		}
 		
+		if(!$partparam && !$brandparam){
+			$requests=DB::table('requests')
+				->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+				->leftjoin('partparams','requests.part_type','=','partparams.param')
+				->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
+				->where('brandparams.user_id',$user->id)
+				->where('partparams.user_id',$user->id)
+				->where('requests.added_by','!=',$user->id)
+				->where('requests.status','=','1')
+				->where('domainparams.user_id',$user->id)->orderBy('request_id',$sort)->paginate($pg);
+		}
 		
+
       
+		//count requests
 		if($partparam && !$brandparam){
 			$requests_count=DB::table('requests')
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-  
-		->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
-        ->where('brandparams.user_id',$user->id)		 
-       
-        ->where('domainparams.user_id',$user->id)->count();
+				->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+				->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
+				->where('brandparams.user_id',$user->id)		 
+				->where('domainparams.user_id',$user->id)->count();
 		}
-		//count requests
+
 		if($brandparam && !$partparam){		
-		$requests_count=DB::table('requests')
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-      
-		->leftjoin('partparams','requests.part_type','=','partparams.param')
-        
-		->where('partparams.user_id',$user->id)
-		->where('requests.added_by','!=',$user->id)
-		->where('requests.status','=','1')
-        ->where('domainparams.user_id',$user->id)->count();
-		}
-		if($partparam && $brandparam){		
-		$requests_count=DB::table('requests')
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-    
-		->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
-               
-        ->where('domainparams.user_id',$user->id)
-		->where('requests.added_by','!=',$user->id)
-		->where('brandparams.user_id',$user->id)
-		->where('requests.status','=','1')->count();
-		
-		}
-		if($brandparam && $partparam){
 			$requests_count=DB::table('requests')
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-              
-       
-		->where('requests.added_by','!=',$user->id)
-		->where('requests.status','=','1')	
-        ->where('domainparams.user_id',$user->id)->count();
+				->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+				->leftjoin('partparams','requests.part_type','=','partparams.param')
+				->where('partparams.user_id',$user->id)
+				->where('requests.added_by','!=',$user->id)
+				->where('requests.status','=','1')
+				->where('domainparams.user_id',$user->id)->count();
+		}
+
+		if($partparam && $brandparam){		
+			$requests_count=DB::table('requests')
+				->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+				->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
+				->where('domainparams.user_id',$user->id)
+				->where('requests.added_by','!=',$user->id)
+				->where('brandparams.user_id',$user->id)
+				->where('requests.status','=','1')->count();
 		
-		}if(!$partparam && !$brandparam){
-		
-	
-		$requests_count=DB::table('requests')
-		
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-  
-		->leftjoin('partparams','requests.part_type','=','partparams.param')
-		->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
-      
-	   ->where('brandparams.user_id',$user->id)
-		->where('partparams.user_id',$user->id)
-		->where('requests.added_by','!=',$user->id)
-		->where('requests.status','=','1')
-        ->where('domainparams.user_id',$user->id)->count();
+		}
+
+		if($brandparam && $partparam){
+			// die;
+			$requests_count=DB::table('requests')
+				->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+				->where('requests.added_by','!=',$user->id)
+				->where('requests.status','=','1')	
+				->where('domainparams.user_id',$user->id)->count();
+		}
+
+		if(!$partparam && !$brandparam){
+
+			$requests_count=DB::table('requests')
+				->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+				->leftjoin('partparams','requests.part_type','=','partparams.param')
+				->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
+				->where('brandparams.user_id',$user->id)
+				->where('partparams.user_id',$user->id)
+				->where('requests.added_by','!=',$user->id)
+				->where('requests.status','=','1')
+				->where('domainparams.user_id',$user->id)->count();
 		}
 		
-       
+		// var_dump($requests->items());
+		// die;
             return view('platform/frontend/requests/national_requests',compact('gs','user','requests','requests_count'));
       
       

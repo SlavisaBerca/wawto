@@ -219,6 +219,7 @@ class RequestsPostController extends Controller
 		}
 	}
     public function postMain(Request $request){
+
         $post= new Requestmodel;
         $domain=Domain::where('id',$request->request_domain)->first();
         $post->request_url = Str::random(40);
@@ -261,6 +262,7 @@ class RequestsPostController extends Controller
         }
       
         $form=$domain->requestform;
+
         if($form->has_equipment){
             $post->has_equipment=1;
         }else{
@@ -294,88 +296,151 @@ class RequestsPostController extends Controller
          $eq->save();
         }
         if($form->has_part){
-			$pi1=$request->part_input1;
-			$pi2=$request->part_input2;
-			$pi3=$request->part_input3;
-			$pi4 = $request->part_input4;
-			
-			  for($i=0;$i < count($pi1); $i++){
-            $data=[
-             'request'=>$request->rqrNumb,
-             'measure_unity'=>$pi1[$i],
-             'part_title'=>$pi2[$i],
-			 'part_code'=>$pi3[$i],
-			 'quantity'=>$pi4[$i],
-			 'part_type'=>$request->part_type,
-			 'status'=>1,
-		
+
+            /* 
+                Datele din formular se gasesc in $request->request,
+                dar sunt accesibile in $request->measure_unity, etc.
+                Prima piesa din cerere se gaste in:
+
+                    $request->request['measure_unity'] => string 'um1' (length=3)
+                    $request->request['part_title'] => string 'den1' (length=4)
+                    $request->request['part_code'] => string 'cod1' (length=4)
+                    $request->request['quantity'] => string '1' (length=1)
+
+                Restul pieselor, daca sunt mai multe, in $request->request['part_input1,2,3,4']:
+                    'part_input1' => 
+                        array (size=2)
+                        0 => string 'um2' (length=3)
+                        1 => string 'um3' (length=3)
+                    'part_input2' => 
+                        array (size=2)
+                        0 => string 'den2' (length=4)
+                        1 => string 'den3' (length=4)
+                    'part_input3' => 
+                        array (size=2)
+                        0 => string 'cod2' (length=4)
+                        1 => null
+                    'part_input4' => 
+                        array (size=2)
+                        0 => string '2' (length=1)
+                        1 => string '3' (length=1)
+            */
+
+            /* Atributele comune pentru toate pisesele din cerere */
+            $common_attruibutes = [
+                'request'=>$request->rqrNumb,
+                'part_type'=>$request->part_type,
+                'status'=>1
             ];
-            $insert_parts[]=$data;
-			}
-			
+
+            /* Prima pisesa */
+            $insert_parts[0]= $common_attruibutes;
+            $insert_parts[0]['measure_unity']=$request->measure_unity;
+            $insert_parts[0]['part_title']=$request->part_title;
+            $insert_parts[0]['part_code']=$request->part_code;
+            $insert_parts[0]['quantity']=$request->quantity;
+
+            /* Adaug si restul de piese din formular */
+            if ( isset($request->part_input1) ) {
+                
+                $c = count($request->part_input1);
+                for ($i=0; $i < $c; $i++) {
+
+                    /* indexul arrey-ului $insert_parts este $i+1 deoarece exista deja o piesa adaugata */
+                    $data = $common_attruibutes;
+                    $data['measure_unity']=$request->part_input1[$i];
+                    $data['part_title']=$request->part_input2[$i];
+                    $data['part_code']=$request->part_input3[$i];
+                    $data['quantity']=$request->part_input4[$i];
+
+                    $insert_parts[]= $data;
+                }
+            }
+// dd($request);
 			$dinamyc_part = DB::table('parts')->insert($insert_parts);
-            $part= new Part;
-            $part->measure_unity=$request->measure_unity;
-            $part->part_title=$request->part_title;
-            $part->part_code=$request->part_code;
-            $part->part_type=$request->part_type;
-            $part->quantity=$request->quantity;
-            $part->request=$request->rqrNumb;
-            $part->status=1;
+
+   /*                  $pi1=$request->part_input1;
+                    $pi2=$request->part_input2;
+                    $pi3=$request->part_input3;
+                    $pi4 = $request->part_input4;
+
+                    for($i=0;$i < count($pi1); $i++){
+                    $data=[
+                    'request'=>$request->rqrNumb,
+                    'measure_unity'=>$pi1[$i],
+                    'part_title'=>$pi2[$i],
+                    'part_code'=>$pi3[$i],
+                    'quantity'=>$pi4[$i],
+                    'part_type'=>$request->part_type,
+                    'status'=>1,
+                
+                    ];
+                    $insert_parts[]=$data;
+                    }
+                    
+                    $dinamyc_part = DB::table('parts')->insert($insert_parts);
+                    $part= new Part;
+                    $part->measure_unity=$request->measure_unity;
+                    $part->part_title=$request->part_title;
+                    $part->part_code=$request->part_code;
+                    $part->part_type=$request->part_type;
+                    $part->quantity=$request->quantity;
+                    $part->request=$request->rqrNumb;
+                    $part->status=1; */
 			
-             if($request->hasfile('part_image'))
-                {
-                    $dirpath = 'platform/frontend/assets/images/customer_images/'.$user->personal_code.'/requests'.'/'.$post->request_number.'/parts';
+                                    /*  if($request->hasfile('part_image'))
+                                        {
+                                            $dirpath = 'platform/frontend/assets/images/customer_images/'.$user->personal_code.'/requests'.'/'.$post->request_number.'/parts';
 
-                    $part_image = Input::file('part_image')->getClientOriginalName();
-                    
-                    $path = 'platform/frontend/assets/images/customer_images/'.$user->personal_code.'/requests'.'/'.$post->request_number.'/parts'.'/'.$part_image;
+                                            $part_image = Input::file('part_image')->getClientOriginalName();
+                                            
+                                            $path = 'platform/frontend/assets/images/customer_images/'.$user->personal_code.'/requests'.'/'.$post->request_number.'/parts'.'/'.$part_image;
 
-                    File::makeDirectory($dirpath,$mode=0777,true,true);
+                                            File::makeDirectory($dirpath,$mode=0777,true,true);
 
-                    
-                    $img=Image::make(Input::file('part_image'))->resize(800,800)->save($path);
-                }
-                else 
-                {
-                    $part_image='';
-                }
-				
-				if($request->hasfile('part_image1'))
-                {
-                     $dirpath = 'platform/frontend/assets/images/customer_images/'.$user->personal_code.'/requests'.'/'.$post->request_number.'/parts';
+                                            
+                                            $img=Image::make(Input::file('part_image'))->resize(800,800)->save($path);
+                                        }
+                                        else 
+                                        {
+                                            $part_image='';
+                                        }
+                                        
+                                        if($request->hasfile('part_image1'))
+                                        {
+                                            $dirpath = 'platform/frontend/assets/images/customer_images/'.$user->personal_code.'/requests'.'/'.$post->request_number.'/parts';
 
-                    $part_image1 = Input::file('part_image1')->getClientOriginalName();
-                    
-                     $path = 'platform/frontend/assets/images/customer_images/'.$user->personal_code.'/requests'.'/'.$post->request_number.'/parts'.'/'.$part_image1;
+                                            $part_image1 = Input::file('part_image1')->getClientOriginalName();
+                                            
+                                            $path = 'platform/frontend/assets/images/customer_images/'.$user->personal_code.'/requests'.'/'.$post->request_number.'/parts'.'/'.$part_image1;
 
-                    File::makeDirectory($dirpath,$mode=0777,true,true);
+                                            File::makeDirectory($dirpath,$mode=0777,true,true);
 
-                    
-                    $img=Image::make(Input::file('part_image1'))->resize(800,800)->save($path);
-                }
-                else 
-                {
-                    $part_image1='';
-                }
-             
-             $part->part_image=$part_image;
-             $part->part_image1=$part_image1;
-             if(!$request->part_type){
-                 $part->part_type=99999999999;
-                 $post->part_type=99999999999;
-             }else{
-                 $part->part_type=$request->part_type;
-                 $post->part_type=$request->part_type;
-             }
-             
-            $part->save();
-        }else{
-            $part=new Part;
-            $part->request=$post->request_number;
-            $post->part_type=99999999999;
-            $part->part_type=99999999999;
-			$part->save();
+                                            
+                                            $img=Image::make(Input::file('part_image1'))->resize(800,800)->save($path);
+                                        }
+                                        else 
+                                        {
+                                            $part_image1='';
+                                        }
+                                    
+                                    $part->part_image=$part_image;
+                                    $part->part_image1=$part_image1;
+                                    if(!$request->part_type){
+                                        $part->part_type=99999999999;
+                                        $post->part_type=99999999999;
+                                    }else{
+                                        $part->part_type=$request->part_type;
+                                        $post->part_type=$request->part_type;
+                                    }
+                                    
+                                    $part->save();
+                                }else{
+                                    $part=new Part;
+                                    $part->request=$post->request_number;
+                                    $post->part_type=99999999999;
+                                    $part->part_type=99999999999;
+                                    $part->save(); */
         }
         
         $input=$request->input;

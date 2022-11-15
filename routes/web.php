@@ -1,4 +1,6 @@
 <?php
+
+use Illuminate\Support\Facades\Auth;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -10,6 +12,9 @@
 |
 */
 Auth::routes();
+
+Route::post('post-mainform','Platform\Frontend\RequestsPostController@postMain')->name('post-mainform');
+
 
 Route::middleware('is_platform')->group(function(){
 

@@ -98,8 +98,7 @@ class OffersController extends Controller
 
                 
                 $offer->part_id = $request->part_id;
-
-               
+             
 
                 $offer->request = $request_id;
 
