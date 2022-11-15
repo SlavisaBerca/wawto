@@ -13,6 +13,7 @@ use App\Models\Platform\Brandparam;
 use App\Models\Platform\Requestimage;
 use App\Models\Platform\Requestmodel;
 
+
     function getLocalRequests()
     {
 		$gs = Generalsetting::findOrFail(1);
@@ -40,14 +41,75 @@ use App\Models\Platform\Requestmodel;
 		
 		if($brand_free && $part_free)
 		{
-		$requests=DB::table('requests')
-        
-	
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-        ->leftjoin('locationparams','locationparams.location','=','requests.request_location')		
-		->where('locationparams.user_id',$user->id)
-		 ->where('domainparams.user_id',$user->id)->paginate($pg);
-		
+		// $requests=DB::table('requests')
+        // ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+        // ->leftjoin('locationparams','locationparams.location','=','requests.request_location')		
+		// ->where('locationparams.user_id',$user->id)
+		// ->where('domainparams.user_id',$user->id)->select('requests.request_id',
+        // 'requests.request_location',
+        // 'requests.request_city',
+        // 'requests.added_by',
+        // 'requests.request_domain',
+        // 'requests.request_url',
+        // 'requests.request_number'
+        // )->groupBy('requests.request_id',
+        // 'requests.request_location',
+        // 'requests.request_city',
+        // 'requests.added_by',
+        // 'requests.request_domain',
+        // 'requests.request_url',
+        // 'requests.request_number'
+        // )->paginate($pg);
+
+
+
+            $requests=DB::table('requests') 
+                ->distinct('request_number', 'request_url', 'request_domain', 'added_by', 'request_city', 'request_location')
+                ->join('domainparams', 'domainparams.domain' ,'=', 'requests.request_domain')
+                ->join('locationparams', 'locationparams.location' ,'=', 'requests.request_location')
+                ->where([['locationparams.user_id', '=', $user->id] , ['domainparams.user_id', '=', $user->id]])
+                ->paginate($pg);
+            
+            
+
+                
+
+
+        // SELECT DISTINCT request_number, request_url, request_domain, added_by, request_city, request_location FROM requests
+        // inner join domainparams
+        // ON requests.request_domain = domainparams.domain
+        // inner join locationparams
+        // ON locationparams.location = requests.request_location
+        // WHERE
+        // locationparams.user_id = 94
+        // AND 
+        // domainparams.user_id = 94
+
+
+
+
+
+
+		// $requests=DB::table('requests')
+        // ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+        // ->leftjoin('locationparams','locationparams.location','=','requests.request_location')		
+		// ->where('locationparams.user_id',$user->id)
+		// ->where('domainparams.user_id',$user->id)->select('requests.request_id',
+        // 'requests.request_location',
+        // 'requests.request_city',
+        // 'requests.added_by',
+        // 'requests.request_domain',
+        // 'requests.request_url',
+        // 'requests.request_number'
+        // )->groupBy('requests.request_id',
+        // 'requests.request_location',
+        // 'requests.request_city',
+        // 'requests.added_by',
+        // 'requests.request_domain',
+        // 'requests.request_url',
+        // 'requests.request_number'
+        // )->paginate($pg);
+
 
 		}
 				else if($brand_free)
@@ -120,57 +182,58 @@ use App\Models\Platform\Requestmodel;
 		}
 		
       
-		if($partparam && !$brandparam){
-			$requests_count=DB::table('requests')
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-        ->leftjoin('locationparams','locationparams.location','=','requests.request_location')
-		->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
-        ->where('brandparams.user_id',$user->id)		 
-        ->where('locationparams.user_id',$user->id)
-        ->where('domainparams.user_id',$user->id)->count();
-		}
-		//count requests
-		if($brandparam && !$partparam){		
-		$requests_count=DB::table('requests')
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-        ->leftjoin('locationparams','locationparams.location','=','requests.request_location') 
-		->leftjoin('partparams','requests.part_type','=','partparams.param')
-        ->where('locationparams.user_id',$user->id)   
-		->where('partparams.user_id',$user->id)
-		->where('requests.added_by','!=',$user->id)
-		->where('requests.status','=','1')
-        ->where('domainparams.user_id',$user->id)->count();
-		}
-		if($partparam && $brandparam){		
-		$requests_count=DB::table('requests')
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-        ->leftjoin('locationparams','locationparams.location','=','requests.request_location') 
-		->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
-        ->where('locationparams.user_id',$user->id)        
-        ->where('domainparams.user_id',$user->id)
-		->where('requests.added_by','!=',$user->id)
-		->where('brandparams.user_id',$user->id)
-		->where('requests.status','=','1')->count();
+	// 	if($partparam && !$brandparam){
+	// 		$requests_count=DB::table('requests')
+    //     ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+    //     ->leftjoin('locationparams','locationparams.location','=','requests.request_location')
+	// 	->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
+    //     ->where('brandparams.user_id',$user->id)		 
+    //     ->where('locationparams.user_id',$user->id)
+    //     ->where('domainparams.user_id',$user->id)->count();
+	// 	}
+	// 	//count requests
+	// 	if($brandparam && !$partparam){		
+	// 	$requests_count=DB::table('requests')
+    //     ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+    //     ->leftjoin('locationparams','locationparams.location','=','requests.request_location') 
+	// 	->leftjoin('partparams','requests.part_type','=','partparams.param')
+    //     ->where('locationparams.user_id',$user->id)   
+	// 	->where('partparams.user_id',$user->id)
+	// 	->where('requests.added_by','!=',$user->id)
+	// 	->where('requests.status','=','1')
+    //     ->where('domainparams.user_id',$user->id)->count();
+	// 	}
+	// 	if($partparam && $brandparam){		
+	// 	$requests_count=DB::table('requests')
+    //     ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+    //     ->leftjoin('locationparams','locationparams.location','=','requests.request_location') 
+	// 	->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
+    //     ->where('locationparams.user_id',$user->id)        
+    //     ->where('domainparams.user_id',$user->id)
+	// 	->where('requests.added_by','!=',$user->id)
+	// 	->where('brandparams.user_id',$user->id)
+	// 	->where('requests.status','=','1')->count();
 		
-		}
-		if(!$partparam && !$brandparam){
-		
-	
-		$requests_count=DB::table('requests')
-		
-        ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
-        ->leftjoin('locationparams','locationparams.location','=','requests.request_location') 
-		->leftjoin('partparams','requests.part_type','=','partparams.param')
-		->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
-        ->where('locationparams.user_id',$user->id)    
-	   ->where('brandparams.user_id',$user->id)
-		->where('partparams.user_id',$user->id)
-		->where('requests.added_by','!=',$user->id)
-		->where('requests.status','=','1')
-        ->where('domainparams.user_id',$user->id)->count();
-		}
+	// 	}
+	// 	if(!$partparam && !$brandparam){
 		
 	
+	// 	$requests_count=DB::table('requests')
+		
+    //     ->leftjoin('domainparams','requests.request_domain','=','domainparams.domain')
+    //     ->leftjoin('locationparams','locationparams.location','=','requests.request_location') 
+	// 	->leftjoin('partparams','requests.part_type','=','partparams.param')
+	// 	->leftjoin('brandparams','requests.brand','=','brandparams.brand_id')
+    //     ->where('locationparams.user_id',$user->id)    
+	//    ->where('brandparams.user_id',$user->id)
+	// 	->where('partparams.user_id',$user->id)
+	// 	->where('requests.added_by','!=',$user->id)
+	// 	->where('requests.status','=','1')
+    //     ->where('domainparams.user_id',$user->id)->count();
+	// 	}
+
+// var_dump($brand_free, $part_free, $partparam, $brandparam ,$requests);
+
       foreach($requests as $request){
 
         $region = Region::where('region_id',$request->request_location)->first();
